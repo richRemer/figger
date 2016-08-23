@@ -49,6 +49,7 @@ describe("figger(filename)", () => {
     it("should resolve to object", (done) => {
         config.then((config) => {
             expect(config).to.be.an("object");
+            done();
         }).catch(done);
     });
 
