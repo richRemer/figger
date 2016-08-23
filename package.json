@@ -20,5 +20,8 @@
     "expect.js": "^0.3.1",
     "mocha": "^3.0.2",
     "mock-fs": "^3.11.0"
+  },
+  "dependencies": {
+    "split": "^1.0.0"
   }
 }
