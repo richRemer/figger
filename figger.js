@@ -81,10 +81,10 @@ function parse() {
         }
 
         // process escapes for <newline> \ "
-        value = value
-            .replace("\\", "\\\\")
-            .replace("\n", "\\n")
-            .replace("\"", "\\\"");
+        value = value       // split then join to replace all
+            .split("\\").join("\\\\")
+            .split("\n").join("\\n")
+            .split("\"").join("\\\"");
 
         // generate dotenv normalized value
         this.push(`${name}="${value}"`);
@@ -107,4 +107,4 @@ function figger(path, values) {
     });
 }
 
-module.exports = figger
+module.exports = figger;
