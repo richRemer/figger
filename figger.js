@@ -12,17 +12,17 @@ var fs = require("fs"),
 function read(path) {
     return fs.createReadStream(path)
         .pipe(split())
-        .pipe(include());
+        .pipe(include(dirname(path)));
 }
 
-function include() {
+function include(path) {
     var transform = new Transform({objectMode: true});
 
     transform._transform = function(chunk, enc, done) {
         var match = dotinc.exec(chunk);
 
         if (match) {
-            glob(match[1], (err, files) => {
+            glob(resolve(path, match[1]), (err, files) => {
                 if (err) return done(err);
                 if (files.length === 0) return done();
                 files.map(read).reduce((p, c) => p.pipe(append(c)))
@@ -47,7 +47,7 @@ function interpolate(values) {
             name = parts.shift(),
             value = parts.join("=");
 
-        value = value
+        values[name] = value
             // strip quotes
             .replace(/^"(.*)"$/, "$1")
 
@@ -65,7 +65,6 @@ function interpolate(values) {
                 return name in values ? values[name] : m;
             });
 
-        values[name] = value;
         this.push(chunk);
         done();
     };
