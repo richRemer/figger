@@ -44,7 +44,7 @@ function interpolate(values) {
             })
 
             // interpolate
-            .replace(/\${[a-z0-9._-]+}/, (m, name) => {
+            .replace(/\${([a-z0-9._-]+)}/, (m, name) => {
                 return name in values ? values[name] : m;
             });
 
