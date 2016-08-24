@@ -24,7 +24,7 @@ describe("figger(filename)", () => {
                 "left_quote     = \"left quote",
                 "right_quote    = right quote\"",
                 "quoted_escape  = \"escape \\\\ \\n in quotes\"",
-                "no_escape      = no escape \\\\ \\n outside of quotes",
+                "no_escape      = no escape \\\\ \\n outside quotes",
                 "quote_comment  = \"quoted value\"  # with comment",
                 "spaced name    = ignored",
                 "# comment line",
