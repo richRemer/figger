@@ -13,7 +13,7 @@ describe("figger(filename)", () => {
                 "sloppy         =    surrounding spaces  ",
                 "   indented    = indented",
                 "internal       = internal  spacing  preserved",
-                "interpolated   = interpolated ${simple}",
+                "interpolated   = interpolated ${simple} ${simple}",
                 "number         = 13",
                 "initial        = ${number}",
                 "number         = 42",
@@ -23,7 +23,7 @@ describe("figger(filename)", () => {
                 "single_quoted  = 'quoted value'",
                 "left_quote     = \"left quote",
                 "right_quote    = right quote\"",
-                "quoted_escape  = \"escape \\\\ \\n in quotes",
+                "quoted_escape  = \"escape \\\\ \\n in quotes\"",
                 "no_escape      = no escape \\\\ \\n outside of quotes",
                 "quote_comment  = \"quoted value\"  # with comment",
                 "spaced name    = ignored",
@@ -84,7 +84,7 @@ describe("figger(filename)", () => {
         });
 
         it("should interpolate values", () => {
-            expect(values.interpolated).to.be("interpolated value");
+            expect(values.interpolated).to.be("interpolated value value");
         });
 
         it("should handle overwritten values in order of appearance", () => {
