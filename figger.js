@@ -1,3 +1,5 @@
+const pattern = /^\s*([a-z0-9._-]+)\s*=\s*("?)(.*?)\2(\s+#.*)?\s*$/;
+
 var fs = require("fs"),
     split = require("split"),
     dirname = require("path").dirname,
@@ -24,7 +26,68 @@ function interpolate(values) {
     var transform = new Transform({objectMode: true});
 
     transform._transform = function(chunk, enc, done) {
+        var parts = chunk.split("="),
+            name = parts.shift(),
+            value = parts.join("=");
+
+        value = value
+            // strip quotes
+            .replace(/^"(.*)"$/, "$1")
+
+            // unescape
+            .replace(/\\(.)/, (seq, char) => {
+                switch (char) {
+                    case "\\": return "\\";
+                    case "n": return "\n";
+                    default: return char;
+                }
+            })
+
+            // interpolate
+            .replace(/\${[a-z0-9._-]+}/, (m, name) => {
+                return name in values ? values[name] : m;
+            });
+
+        values[name] = value;
         this.push(chunk);
+        done();
+    };
+
+    return transform;
+}
+
+function parse() {
+    var transform = new Transform({objectMode: true});
+
+    transform._transform = function(chunk, enc, done) {
+        var match = pattern.exec(chunk),
+            name, value, quoted;
+
+        if (!match) return done();
+
+        name = match[1];
+        quoted = match[2];
+        value = match[3];
+
+        // if quoted, process \\ and \n escapes
+        if (quoted) {
+            value = value.replace(/\\(.)/, (seq, char) => {
+                switch (char) {
+                    case "\\": return "\\";
+                    case "n": return "\n";
+                    default: return char;
+                }
+            });
+        }
+
+        // process escapes for <newline> \ "
+        value = value
+            .replace("\\", "\\\\")
+            .replace("\n", "\\n")
+            .replace("\"", "\\\"");
+
+        // generate dotenv normalized value
+        this.push(`${name}="${value}"`);
         done();
     };
 
@@ -36,10 +99,9 @@ function figger(path, values) {
         values = values || {};
 
         read(path)
+            .pipe(parse())
             .pipe(interpolate(values))
-            .on("end", () => {
-                resolve(values);
-            })
+            .on("end", () => resolve(values))
             .on("error", reject)
             .resume();
     });
