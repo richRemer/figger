@@ -1,8 +1,12 @@
-const pattern = /^\s*([a-z0-9._-]+)\s*=\s*("?)(.*?)\2(\s+#.*)?\s*$/;
+const assignment = /^\s*([a-z0-9._-]+)\s*=\s*("?)(.*?)\2(\s+#.*)?\s*$/;
+const dotinc = /^\s*\.\s+(.*)\s*$/;
 
 var fs = require("fs"),
+    glob = require("glob"),
     split = require("split"),
+    append = require("add-stream"),
     dirname = require("path").dirname,
+    resolve = require("path").resolve,
     Transform = require("stream").Transform;
 
 function read(path) {
@@ -15,8 +19,21 @@ function include() {
     var transform = new Transform({objectMode: true});
 
     transform._transform = function(chunk, enc, done) {
-        this.push(chunk);
-        done();
+        var match = dotinc.exec(chunk);
+
+        if (match) {
+            glob(match[1], (err, files) => {
+                if (err) return done(err);
+                if (files.length === 0) return done();
+                files.map(read).reduce((p, c) => p.pipe(append(c)))
+                    .on("data", data => this.push(data))
+                    .on("end", done)
+                    .on("error", done);
+            });
+        } else {
+            this.push(chunk);
+            done();
+        }
     };
 
     return transform;
@@ -60,7 +77,7 @@ function parse() {
     var transform = new Transform({objectMode: true});
 
     transform._transform = function(chunk, enc, done) {
-        var match = pattern.exec(chunk),
+        var match = assignment.exec(chunk),
             name, value, quoted;
 
         if (!match) return done();
