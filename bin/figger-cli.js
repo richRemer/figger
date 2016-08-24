@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var figger = require(".."),
     files = process.argv.slice(2),
     file,
