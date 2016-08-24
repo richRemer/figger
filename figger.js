@@ -35,7 +35,7 @@ function interpolate(values) {
             .replace(/^"(.*)"$/, "$1")
 
             // unescape
-            .replace(/\\(.)/, (seq, char) => {
+            .replace(/\\(.)/g, (seq, char) => {
                 switch (char) {
                     case "\\": return "\\";
                     case "n": return "\n";
@@ -44,7 +44,7 @@ function interpolate(values) {
             })
 
             // interpolate
-            .replace(/\${([a-z0-9._-]+)}/, (m, name) => {
+            .replace(/\${([a-z0-9._-]+)}/g, (m, name) => {
                 return name in values ? values[name] : m;
             });
 
@@ -71,7 +71,7 @@ function parse() {
 
         // if quoted, process \\ and \n escapes
         if (quoted) {
-            value = value.replace(/\\(.)/, (seq, char) => {
+            value = value.replace(/\\(.)/g, (seq, char) => {
                 switch (char) {
                     case "\\": return "\\";
                     case "n": return "\n";
