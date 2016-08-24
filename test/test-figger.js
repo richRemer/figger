@@ -64,61 +64,61 @@ describe("figger(filename)", () => {
         });
 
         it("should handle simple values", () => {
-            expect(config.simple).to.be("value");
+            expect(values.simple).to.be("value");
         });
 
         it("should handle values with spaces", () => {
-            expect(config.spaced).to.be("value with spaces");
+            expect(values.spaced).to.be("value with spaces");
         });
 
         it("should handle surrounding spaces", () => {
-            expect(config.sloppy).to.be("surrounding spaces");
+            expect(values.sloppy).to.be("surrounding spaces");
         });
 
         it("should handle indented lines", () => {
-            expect(config.indented).to.be("indented");
+            expect(values.indented).to.be("indented");
         });
 
         it("should preserve internal spacing", () => {
-            expect(config.internal).to.be("internal  spacing  preserved");
+            expect(values.internal).to.be("internal  spacing  preserved");
         });
 
         it("should interpolate values", () => {
-            expect(config.interpolated).to.be("interpolated value");
+            expect(values.interpolated).to.be("interpolated value");
         });
 
         it("should handle overwritten values in order of appearance", () => {
-            expect(config.number).to.be("42");
-            expect(config.initial).to.be("13");
-            expect(config.overwrite).to.be("42");
+            expect(values.number).to.be("42");
+            expect(values.initial).to.be("13");
+            expect(values.overwrite).to.be("42");
         });
 
         it("should handle quoted values", () => {
-            expect(config.quoted).to.be("quoted value");
-            expect(config.single_quoted).to.be("'quoted value'");
-            expect(config.left_quote).to.be("\"left quote");
-            expect(config.right_quote).to.be("right quote\"");
+            expect(values.quoted).to.be("quoted value");
+            expect(values.single_quoted).to.be("'quoted value'");
+            expect(values.left_quote).to.be("\"left quote");
+            expect(values.right_quote).to.be("right quote\"");
         });
 
         it("should handle escapes within quotes", () => {
-            expect(config.quoted_escape).to.be("escape \\ \n in quotes");
-            expect(config.no_escape).to.be("no escape \\\\ \\n outside quotes");
+            expect(values.quoted_escape).to.be("escape \\ \n in quotes");
+            expect(values.no_escape).to.be("no escape \\\\ \\n outside quotes");
         });
 
         it("should handle comments", () => {
-            expect(config.commented).to.be("commented line");
-            expect(config.quote_comment).to.be("quoted value");
+            expect(values.commented).to.be("commented line");
+            expect(values.quote_comment).to.be("quoted value");
         });
 
         it("should ignore invalid lines", () => {
-            expect(config["spaced name"]).to.be(undefined);
-            expect(config["other"]).to.be(undefined);
-            expect(config["other ignored junk"]).to.be(undefined);
+            expect(values["spaced name"]).to.be(undefined);
+            expect(values["other"]).to.be(undefined);
+            expect(values["other ignored junk"]).to.be(undefined);
         });
 
         it("should process includes with imported values", () => {
-            expect(config.first_include).to.be("42");
-            expect(config.second_include).to.be("42");
+            expect(values.first_include).to.be("42");
+            expect(values.second_include).to.be("42");
         });
     });
 });
