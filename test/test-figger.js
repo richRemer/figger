@@ -12,6 +12,11 @@ describe("figger(filename)", () => {
                 "spaced=value with spaces",
                 "sloppy         =    surrounding spaces  ",
                 "   indented    = indented",
+                "underscore_ok  = underscores allowed",
+                "hyphen-ok      = hyphens allowed",
+                "dot.ok         = dots allowed",
+                "at@ok          = @'s allowed",
+                "digit0ok       = digits allowed",
                 "internal       = internal  spacing  preserved",
                 "interpolated   = interpolated ${simple} ${simple}",
                 "number         = 13",
@@ -77,6 +82,26 @@ describe("figger(filename)", () => {
 
         it("should handle indented lines", () => {
             expect(values.indented).to.be("indented");
+        });
+
+        it("should handle names with underscores", () => {
+            expect(values.underscore_ok).to.be("underscores allowed");
+        });
+
+        it("should handle names with hyphens", () => {
+            expect(values["hyphen-ok"]).to.be("hyphens allowed");
+        });
+
+        it("should handle names with dots", () => {
+            expect(values["dot.ok"]).to.be("dots allowed");
+        });
+
+        it("should handle names with ats", () => {
+            expect(values["at@ok"]).to.be("@'s allowed");
+        });
+
+        it("should handle names with digits", () => {
+            expect(values["digit0ok"]).to.be("digits allowed");
         });
 
         it("should preserve internal spacing", () => {
