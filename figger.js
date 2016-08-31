@@ -1,4 +1,4 @@
-const assignment = /^\s*([-@a-z0-9._]+)\s*=\s*("?)(.*?)\2(\s+#.*)?\s*$/;
+const assignment = /^\s*([-@a-z0-9._]+)\s*=\s*("?)(.*?)\2(\s+#.*)?\s*$/i;
 const dotinc = /^\s*\.\s+(.*)\s*$/;
 
 var fs = require("fs"),

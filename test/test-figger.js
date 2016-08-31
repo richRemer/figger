@@ -12,6 +12,7 @@ describe("figger(filename)", () => {
                 "spaced=value with spaces",
                 "sloppy         =    surrounding spaces  ",
                 "   indented    = indented",
+                "CAPSok         = capitals allowed",
                 "underscore_ok  = underscores allowed",
                 "hyphen-ok      = hyphens allowed",
                 "dot.ok         = dots allowed",
@@ -82,6 +83,10 @@ describe("figger(filename)", () => {
 
         it("should handle indented lines", () => {
             expect(values.indented).to.be("indented");
+        });
+
+        it("should handle names with capitals", () => {
+            expect(values.CAPSok).to.be("capitals allowed");
         });
 
         it("should handle names with underscores", () => {
