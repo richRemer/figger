@@ -8,7 +8,8 @@ var fs = require("fs"),
     dirname = require("path").dirname,
     resolve = require("path").resolve,
     Transform = require("stream").Transform,
-    quoted = require("./lib/quoted");
+    quoted = require("./lib/quoted"),
+    value = require("./lib/value");
 
 function read(path) {
     return fs.createReadStream(path)
@@ -126,3 +127,4 @@ function figger(path, values) {
 
 module.exports = figger;
 module.exports.quoted = quoted;
+module.exports.value = value;

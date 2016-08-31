@@ -171,3 +171,23 @@ describe("figger.quoted(raw)", () => {
     });
 });
 
+describe("figger.value(val)", () => {
+    it("should strip surrounding quotes from quoted values", () => {
+        expect(figger.value("\"foo\"")).to.be("foo");
+    });
+
+    it("should preserve other quotes", () => {
+        expect(figger.value("42\" long")).to.be("42\" long");
+        expect(figger.value("\"42\" long\"")).to.be("42\" long");
+    });
+
+    it("should preserve backslashes in raw values", () => {
+        expect(figger.value("before\\after")).to.be("before\\after");
+        expect(figger.value("1\\n2")).to.be("1\\n2");
+    });
+
+    it("should evaluate escapes in quoted values", () => {
+        expect(figger.value("\"before\\\\after\"")).to.be("before\\after");
+        expect(figger.value("\"1\\n2\"")).to.be("1\n2");
+    });
+});
