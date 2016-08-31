@@ -153,4 +153,21 @@ describe("figger(filename)", () => {
     });
 });
 
+describe("figger.quoted(raw)", () => {
+    it("should add surrounding quotes", () => {
+        expect(figger.quoted("foo")).to.be("\"foo\"");
+    });
+
+    it("should escape backslashes", () => {
+        expect(figger.quoted("before\\after")).to.be("\"before\\\\after\"");
+    });
+
+    it("should preserve quotes", () => {
+        expect(figger.quoted("42\" long")).to.be("\"42\" long\"");
+    });
+
+    it("should preserve quoted value", () => {
+        expect(figger.quoted("\"1\\n2\"")).to.be("\"1\\n2\"");
+    });
+});
 
