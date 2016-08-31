@@ -191,3 +191,38 @@ describe("figger.value(val)", () => {
         expect(figger.value("\"1\\n2\"")).to.be("1\n2");
     });
 });
+
+describe("figger.escape(val)", () => {
+    it("should preserve simple value", () => {
+        expect(figger.escape("foo")).to.be("foo");
+    });
+
+    it("should quote value with surrounding space", () => {
+        expect(figger.escape(" foo")).to.be("\" foo\"");
+        expect(figger.escape("foo ")).to.be("\"foo \"");
+    });
+
+    it("should preserve backslash in simple cases", () => {
+        expect(figger.escape("before\\after")).to.be("before\\after");
+    });
+
+    it("should escape backslash if quoting value", () => {
+        expect(figger.escape(" \\foo")).to.be("\" \\\\foo\"");
+    });
+
+    it("should preserve half-quoted value", () => {
+        expect(figger.escape("42\"")).to.be("42\"");
+    });
+
+    it("should preserve spaced value", () => {
+        expect(figger.escape("foo bar")).to.be("foo bar");
+    });
+
+    it("should double quote quoted value", () => {
+        expect(figger.escape("\"foo\"")).to.be("\"\"foo\"\"");
+    });
+
+    it("should quote and escape value with newline", () => {
+        expect(figger.escape("1\n2")).to.be("\"1\\n2\"");
+    });
+});
