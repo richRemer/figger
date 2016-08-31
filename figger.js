@@ -10,7 +10,8 @@ var fs = require("fs"),
     Transform = require("stream").Transform,
     quoted = require("./lib/quoted"),
     value = require("./lib/value"),
-    escape = require("./lib/escape");
+    escape = require("./lib/escape"),
+    env = require("./lib/env");
 
 function read(path) {
     return fs.createReadStream(path)
@@ -130,3 +131,4 @@ module.exports = figger;
 module.exports.quoted = quoted;
 module.exports.value = value;
 module.exports.escape = escape;
+module.exports.env = env;

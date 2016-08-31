@@ -226,3 +226,38 @@ describe("figger.escape(val)", () => {
         expect(figger.escape("1\n2")).to.be("\"1\\n2\"");
     });
 });
+
+describe("figger.env(raw)", () => {
+    it("should preserve simple value", () => {
+        expect(figger.env("")).to.be("");
+        expect(figger.env("foo")).to.be("foo");
+    });
+
+    it("should strip surrounding space", () => {
+        expect(figger.env(" foo")).to.be("foo");
+        expect(figger.env("foo ")).to.be("foo");
+    });
+
+    it("should preserve surrounding quotes", () => {
+        expect(figger.env("\"foo\"")).to.be("\"foo\"");
+    });
+
+    it("should quote value with space or single quote", () => {
+        expect(figger.env("foo bar")).to.be("\"foo bar\"");
+        expect(figger.env("it's time")).to.be("\"it's time\"");
+    });
+
+    it("should quote and escape internal quote", () => {
+        expect(figger.env("42\" long")).to.be("\"42\\\" long\"");
+        expect(figger.env("\"42\" long\"")).to.be("\"42\\\" long\"");
+    });
+
+    it("should quote and escape backslash", () => {
+        expect(figger.env("before\\after")).to.be("\"before\\\\after\"");
+    });
+
+    it("should treat newline as space", () => {
+        expect(figger.env("1\n2")).to.be("\"1 2\"");
+        expect(figger.env("\"1\n2\"")).to.be("\"1 2\"");
+    });
+});
