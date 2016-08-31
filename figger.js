@@ -1,4 +1,4 @@
-const assignment = /^\s*([-@a-z0-9._]+)\s*=\s*("?)(.*?)\2(\s+#.*)?\s*$/i;
+const setline = /^\s*([-@a-z0-9._]+)\s*=\s*(("?)(.*?)\3)(\s+#.*)?\s*$/i;
 const dotinc = /^\s*\.\s+(.*)\s*$/;
 
 var fs = require("fs"),
@@ -29,7 +29,7 @@ function include(path) {
             glob(resolve(path, match[1]), (err, files) => {
                 if (err) return done(err);
                 if (files.length === 0) return done();
-                files.map(read).reduce((p, c) => p.pipe(append(c)))
+                files.map(read).reduce((a, b) => a.pipe(append(b)))
                     .on("data", data => this.push(data))
                     .on("end", done)
                     .on("error", done);
@@ -47,28 +47,11 @@ function interpolate(values) {
     var transform = new Transform({objectMode: true});
 
     transform._transform = function(chunk, enc, done) {
-        var parts = chunk.split("="),
-            name = parts.shift(),
-            value = parts.join("=");
+        chunk.value = chunk.value.replace(/\${([a-z0-9._-]+)}/ig, (m, name) => {
+            return name in values ? values[name] : m;
+        });
 
-        values[name] = value
-            // strip quotes
-            .replace(/^"(.*)"$/, "$1")
-
-            // unescape
-            .replace(/\\(.)/g, (seq, char) => {
-                switch (char) {
-                    case "\\": return "\\";
-                    case "n": return "\n";
-                    default: return char;
-                }
-            })
-
-            // interpolate
-            .replace(/\${([a-z0-9._-]+)}/g, (m, name) => {
-                return name in values ? values[name] : m;
-            });
-
+        values[chunk.name] = chunk.value;
         this.push(chunk);
         done();
     };
@@ -77,38 +60,22 @@ function interpolate(values) {
 }
 
 function parse() {
-    var transform = new Transform({objectMode: true});
+    var transform = new Transform({objectMode: true}),
+        line = 0;
 
     transform._transform = function(chunk, enc, done) {
-        var match = assignment.exec(chunk),
-            name, value, quoted;
+        var match = setline.exec(chunk);
 
-        if (!match) return done();
+        if (match) this.push({
+            line: ++line,
+            text: chunk,
+            name: match[1],
+            value: figger.value(match[2]),
+            raw: match[2]
+        });
 
-        name = match[1];
-        quoted = match[2];
-        value = match[3];
-
-        // if quoted, process \\ and \n escapes
-        if (quoted) {
-            value = value.replace(/\\(.)/g, (seq, char) => {
-                switch (char) {
-                    case "\\": return "\\";
-                    case "n": return "\n";
-                    default: return char;
-                }
-            });
-        }
-
-        // process escapes for <newline> \ "
-        value = value       // split then join to replace all
-            .split("\\").join("\\\\")
-            .split("\n").join("\\n")
-            .split("\"").join("\\\"");
-
-        // generate dotenv normalized value
-        this.push(`${name}="${value}"`);
         done();
+        return;
     };
 
     return transform;
