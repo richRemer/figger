@@ -43,7 +43,31 @@ function include(path) {
     return transform;
 }
 
-function interpolate(values) {
+function dump() {
+    var transform = new Transform({objectMode: true});
+
+    transform._transform = function(chunk, enc, done) {
+        var value = escape(chunk.value);
+        this.push(`${chunk.name}=${value}`);
+        done();
+    };
+
+    return transform;
+}
+
+function envify() {
+    var transform = new Transform({objectMode: true});
+
+    transform._transform = function(chunk, enc, done) {
+        var value = env(chunk.raw);
+        this.push(`${chunk.name}=${value}`);
+        done();
+    };
+
+    return transform;
+}
+
+function evaluate(values) {
     var transform = new Transform({objectMode: true});
 
     transform._transform = function(chunk, enc, done) {
@@ -59,7 +83,7 @@ function interpolate(values) {
     return transform;
 }
 
-function parse() {
+function tokenize() {
     var transform = new Transform({objectMode: true}),
         line = 0;
 
@@ -81,13 +105,34 @@ function parse() {
     return transform;
 }
 
-function figger(path, values) {
-    return new Promise((resolve, reject) => {
-        values = values || {};
+/**
+ * Load configuration file.
+ * @param {Symbol} [output=figger.resolve]
+ * @param {string} path
+ * @param {object} [values]
+ * @returns {Promise|Readable}
+ */
+function figger(output, path, values) {
+    var tokens, evaluated;
 
-        read(path)
-            .pipe(parse())
-            .pipe(interpolate(values))
+    if (typeof output !== "symbol") {
+        values = path;
+        path = output;
+        output = figger.resolve;
+    }
+
+    tokens = read(path).pipe(tokenize());
+    if (output === figger.tokenize) return tokens;
+
+    values = values || {};
+    evaluated = tokens.pipe(evaluate(values));
+    if (output === figger.evaluate) return evaluated;
+
+    if (output === figger.dump) return evaluated.pipe(dump());
+    if (output === figger.envify) return evaluated.pipe(envify());
+
+    return new Promise((resolve, reject) => {
+        evaluated
             .on("end", () => resolve(values))
             .on("error", reject)
             .resume();
@@ -95,7 +140,15 @@ function figger(path, values) {
 }
 
 module.exports = figger;
+
 module.exports.quoted = quoted;
 module.exports.value = value;
 module.exports.escape = escape;
 module.exports.env = env;
+
+module.exports.tokenize = Symbol("tokenize");
+module.exports.evaluate = Symbol("evaluate");
+module.exports.dump = Symbol("dump");
+module.exports.envify = Symbol("envify");
+module.exports.resolve = Symbol("resolve");
+

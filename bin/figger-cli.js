@@ -1,31 +1,20 @@
 #!/usr/bin/env node
 
 var figger = require(".."),
-    files = process.argv.slice(2),
-    file,
-    result;
+    args = process.argv.slice(2),
+    envify;
 
-if (!files.length) {
-    console.error("Usage: figger <file> [<file> ...]");
+envify = Boolean(~args.indexOf("--envify"));
+args = args.filter(arg => arg !== "--envify");
+
+if (args.length !== 1) {
+    console.error("Usage: figger [--envify] <file>");
     process.exit(1);
 }
 
-result = figger(files.shift());
-files.forEach(file => {
-    result = result.then(conf => figger(file, conf));
-});
+figger(envify ? figger.envify : figger.dump, args[0])
+    .on("data", data => console.log(data))
+    .on("error", err => {
+        console.error(process.env.debug ? err.stack : err.message);
+    });
 
-result.then(conf => {
-    for (var k in conf) {
-        console.log(envify(k, conf[k]));
-    }
-});
-
-function envify(k, v) {
-    v = v
-        .split("\\").join("\\\\")
-        .split("\n").join("\\n")
-        .split("\"").join("\\\"");
-
-    return `${k}="${v}"`;
-}
