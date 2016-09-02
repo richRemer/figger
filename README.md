@@ -11,5 +11,5 @@ figger(confs.global)
 ```
 
 ```sh
-figger /etc/foo.conf > .env
+figger --envify /etc/foo.conf > .env
 ```
