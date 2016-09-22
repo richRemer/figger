@@ -1,5 +1,6 @@
 const setline = /^\s*([-@a-z0-9._]+)\s*=\s*(("?)(.*?)\3)(\s+#.*)?\s*$/i;
 const dotinc = /^\s*\.\s+(.*)\s*$/;
+const reference = /\${([a-z0-9._-]+)}/ig;
 
 var fs = require("fs"),
     glob = require("glob"),
@@ -48,7 +49,7 @@ function dump() {
 
     transform._transform = function(chunk, enc, done) {
         var value = escape(chunk.value);
-        this.push(`${chunk.name}=${value}`);
+        this.push(`${chunk.name}=${value}\n`);
         done();
     };
 
@@ -59,8 +60,8 @@ function envify() {
     var transform = new Transform({objectMode: true});
 
     transform._transform = function(chunk, enc, done) {
-        var value = env(chunk.raw);
-        this.push(`${chunk.name}=${value}`);
+        var value = env(chunk.interpolated);
+        this.push(`${chunk.name}=${value}\n`);
         done();
     };
 
@@ -71,7 +72,11 @@ function evaluate(values) {
     var transform = new Transform({objectMode: true});
 
     transform._transform = function(chunk, enc, done) {
-        chunk.value = chunk.value.replace(/\${([a-z0-9._-]+)}/ig, (m, name) => {
+        chunk.value = chunk.value.replace(reference, (m, name) => {
+            return name in values ? values[name] : m;
+        });
+
+        chunk.interpolated = chunk.raw.replace(reference, (m, name) => {
             return name in values ? values[name] : m;
         });
 
@@ -94,7 +99,7 @@ function tokenize() {
             line: ++line,
             text: chunk,
             name: match[1],
-            value: figger.value(match[2]),
+            value: value(match[2]),
             raw: match[2]
         });
 

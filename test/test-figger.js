@@ -1,8 +1,9 @@
 var expect = require("expect.js"),
     mockfs = require("mock-fs"),
+    concat = require("concat-stream"),
     figger = require("..");
 
-describe("figger(filename)", () => {
+describe("figger(string)", () => {
     var config;
 
     before(() => {
@@ -59,7 +60,7 @@ describe("figger(filename)", () => {
         }).catch(done);
     });
 
-    describe("result", () => {
+    describe("=> Promise : resolved object", () => {
         var values;
 
         before((done) => {
@@ -149,6 +150,126 @@ describe("figger(filename)", () => {
         it("should process includes with imported values", () => {
             expect(values.first_include).to.be("42");
             expect(values.second_include).to.be("42");
+        });
+    });
+});
+
+describe("figger(figger.dump, string)", () => {
+    var config;
+
+    beforeEach(() => {
+        mockfs({
+            "my.conf": [
+                "basic          = value",
+                "spaced         = value with spaces",
+                "numeric        = 13.3",
+                "quoted         = \"quoted\"",
+                "escaped        = \"\\n\"",
+                "value          = 42",
+                "reference      = ${value}",
+                "nested         = foo${value}"
+            ].join("\n")
+        });
+
+        config = figger(figger.dump, "my.conf");
+    });
+
+    afterEach(() => {
+        mockfs.restore();
+    });
+
+    it("should return a stream", () => {
+        expect(config).to.be.an("object");
+        expect(config.on).to.be.a("function");
+    });
+
+    describe("=> Stream : concatenated data", () => {
+        var data;
+
+        beforeEach(done => {
+            config.pipe(concat(result => {
+                data = result;
+                done();
+            }));
+        });
+
+        it("should remove extraneous space", () => {
+            expect(/^basic=value$/m.test(data)).to.be(true);
+            expect(/^spaced=value with spaces$/m.test(data)).to.be(true);
+            expect(/^numeric=13.3$/m.test(data)).to.be(true);
+        });
+
+        it("should strip unnecessary quotes", () => {
+            expect(/^quoted=quoted$/m.test(data)).to.be(true);
+        });
+
+        it("should preserve necessary quotes", () => {
+            expect(/^escaped="\\n"$/m.test(data)).to.be(true);
+        });
+
+        it("should evaluate references", () => {
+            expect(/^reference=42$/m.test(data)).to.be(true);
+            expect(/^nested=foo42$/m.test(data)).to.be(true);
+        });
+    });
+});
+
+describe("figger(figger.envify, string)", () => {
+    var config;
+
+    beforeEach(() => {
+        mockfs({
+            "my.conf": [
+                "basic          = value",
+                "spaced         = value with spaces",
+                "numeric        = 13.3",
+                "quoted         = \"quoted\"",
+                "value          = 42",
+                "reference      = ${value}",
+                "nested         = foo${value}",
+                "quoteval       = \"${value}\"",
+            ].join("\n")
+        });
+
+        config = figger(figger.envify, "my.conf");
+    });
+
+    afterEach(() => {
+        mockfs.restore();
+    });
+
+    it("should return a stream", () => {
+        expect(config).to.be.an("object");
+        expect(config.on).to.be.a("function");
+    });
+
+    describe("=> Stream : concatenated data", () => {
+        var data;
+
+        beforeEach(done => {
+            config.pipe(concat(result => {
+                data = result;
+                done();
+            }));
+        });
+
+        it("should remove extraneous space", () => {
+            expect(/^basic=value$/m.test(data)).to.be(true);
+            expect(/^numeric=13.3$/m.test(data)).to.be(true);
+        });
+
+        it("should preserve existing quotes", () => {
+            expect(/^quoted="quoted"$/m.test(data)).to.be(true);
+        });
+
+        it("should add quotes as necessary", () => {
+            expect(/^spaced="value with spaces"$/m.test(data)).to.be(true);
+        });
+
+        it("should evaluate references", () => {
+            expect(/^reference=42$/m.test(data)).to.be(true);
+            expect(/^nested=foo42$/m.test(data)).to.be(true);
+            expect(/^quoteval="42"$/m.test(data)).to.be(true);
         });
     });
 });

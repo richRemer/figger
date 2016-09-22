@@ -13,7 +13,7 @@ if (args.length !== 1) {
 }
 
 figger(envify ? figger.envify : figger.dump, args[0])
-    .on("data", data => console.log(data))
+    .pipe(process.stdout)
     .on("error", err => {
         console.error(process.env.debug ? err.stack : err.message);
     });
