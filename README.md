@@ -1,3 +1,5 @@
+Node.js Module
+--------------
 ```js
 var figger = require("figger"),
     join = require("path").join,
@@ -8,6 +10,9 @@ var figger = require("figger"),
 
 figger(confs.global)
     .then(conf => figger(confs.user, conf))
+    .then(conf => {
+        // conf is object containing config values
+    });
 ```
 
 ```sh
