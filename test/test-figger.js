@@ -474,3 +474,38 @@ describe("figger.read(string)", () => {
         expect(names.length).to.be(3);
     });
 });
+
+describe("figger.evaluate(object)", () => {
+    var config, tokens;
+
+    before((done) => {
+        mockfs({
+            "primary.conf": [
+                "primary=42",
+                ". *.inc"
+            ].join("\n"),
+            "included.inc": "included=${primary}"
+        });
+
+        config = {};
+        tokens = [];
+
+        figger.read("primary.conf").pipe(figger.evaluate(config))
+            .on("data", datum => tokens.push(datum))
+            .on("error", done)
+            .on("end", done)
+            .resume();
+    });
+
+    after(() => {
+        mockfs.restore();
+    });
+
+    it("should load evaluated values into object", () => {
+        expect(config.primary).to.be("42");
+    });
+
+    it("should evaluate references", () => {
+        expect(config.included).to.be("42");
+    });
+});
