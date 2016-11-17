@@ -1,3 +1,4 @@
+module.exports = require("./lib/figger");
 module.exports.read = require("./lib/figger/read");
 module.exports.clean = require("./lib/figger/clean");
 module.exports.evaluate = require("./lib/figger/evaluate");

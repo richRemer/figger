@@ -509,3 +509,118 @@ describe("figger.evaluate(object)", () => {
         expect(config.included).to.be("42");
     });
 });
+
+describe("figger(string)", () => {
+    var result;
+
+    before(() => {
+        mockfs({
+            "primary.conf": [
+                "name           = value",
+                "ref            = ${name}",
+                "secondary_ref  = ${ref}",
+                "multiple_refs  = ${name} ${name}",
+                "number         = 42",
+                "changed        = 1",
+                "ordered        = ${changed}",
+                "changed        = 2",
+                "commented      = commented line    # with comment",
+                "quoted         = \"quoted value\"",
+                "single_quoted  = 'quoted value'",
+                "left_quote     = \"left quote",
+                "right_quote    = right quote\"",
+                "quoted_escape  = \"escape \\\\ \\n in quotes\"",
+                "no_escape      = no escape \\\\ \\n outside quotes",
+                "quote_comment  = \"quoted value\"  # with comment",
+                "spaced name    = ignored",
+                "other ignored junk",
+                ". *.inc"
+            ].join("\n"),
+            "first.inc": "first_include  = ${name}",
+            "second.inc": "second_include = ${name}"
+        });
+
+        result = figger("primary.conf");
+    });
+
+    it("should return Promise", () => {
+        expect(result).to.be.a(Promise);
+    });
+
+    describe("=> Promise", () => {
+        it("should resolve to object", (done) => {
+            result.then(config => {
+                expect(config).to.be.an("object");
+                done();
+            }).catch(done);
+        });
+
+        describe("<object> evaluation", () => {
+            var config;
+
+            before((done) => {
+                result.then(conf => {
+                    config = conf;
+                    done();
+                }).catch(done);
+            });
+
+            it("should recognize simple values", () => {
+                expect(config.name).to.be("value");
+            });
+
+            it("should recognize references", () => {
+                expect(config.ref).to.be("value");
+                expect(config.secondary_ref).to.be("value");
+                expect(config.multiple_refs).to.be("value value");
+            });
+
+            it("should handle numeric values as strings", () => {
+                expect(config.number).to.be("42");
+            });
+
+            it("should allow overriding values", () => {
+                expect(config.changed).to.be("2");
+            });
+
+            it("should order assignments and refs", () => {
+                expect(config.ordered).to.be("1");
+            });
+
+            it("should handle assignments with trailing comments", () => {
+                expect(config.commented).to.be("commented line");
+            });
+
+            it("should handle double quotes", () => {
+                expect(config.quoted).to.be("quoted value");
+            });
+
+            it("should not handle single quotes", () => {
+                expect(config.single_quoted).to.be("'quoted value'");
+            });
+
+            it("should ignore lopsided quotes", () => {
+                expect(config.left_quote).to.be("\"left quote");
+                expect(config.right_quote).to.be("right quote\"");
+            });
+
+            it("should handle escapes inside quotes", () => {
+                expect(config.quoted_escape).to.be("escape \\ \n in quotes");
+            });
+
+            it("should not handle escapes outside quotes", () => {
+                expect(config.no_escape).to.be("no escape \\\\ \\n outside quotes");
+            });
+
+            it("should ignore identifier names with spaces", () => {
+                expect(config["spaced name"]).to.be(undefined);
+            });
+
+            it("should handle references in includes", () => {
+                expect(config.first_include).to.be("value");
+                expect(config.second_include).to.be("value");
+            });
+        });
+    });
+});
+
