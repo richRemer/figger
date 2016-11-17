@@ -3,6 +3,7 @@ const figger = require("..");
 const token = figger.token;
 const readable = figger.stream.readable;
 const transform = figger.stream.transform;
+const buffered = figger.buffered;
 
 describe("streams", () => {
     describe("readable", () => {
@@ -405,6 +406,35 @@ describe("stages", () => {
         it("should pass through other values", () => {
             var objs = results.filter(v => v === objval);
             expect(objs.length).to.be(1);
+        });
+    });
+});
+
+describe("figger.buffered()", () => {
+    it("should buffer input stream by 'eol' tokens", () => {
+        var input, T, output,
+            errored = false,
+            results = [];
+
+        input = readable(["a", "b", token("eol", "\n"), "c", "d"]);
+        T = buffered();
+        output = input.pipe(T);
+
+        output.on("data", data => results.push(data));
+        output.on("error", err => errored = err);
+        output.on("end", () => {
+            expect(errored).to.be(false);
+            expect(results.length).to.be(2);
+            expect(results[0]).to.be.an("array");
+            expect(results[1]).to.be.an("array");
+            expect(results[0][0]).to.be("a");
+            expect(results[0][1]).to.be("b");
+            expect(results[0][2].type).to.be(token.eol);
+            expect(results[0][2].value).to.be("\n");
+            expect(results[1][0]).to.be("c");
+            expect(results[1][1]).to.be("d");
+            expect(results[1][2].type).to.be(token.eol);
+            expect(results[1][2].value).to.be("");
         });
     });
 });
