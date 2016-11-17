@@ -1,6 +1,6 @@
 {
   "name": "figger",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "process application configuration files",
   "main": "figger.js",
   "bin": {
@@ -28,6 +28,7 @@
   "dependencies": {
     "add-stream": "^1.0.0",
     "glob": "^7.0.5",
-    "split": "^1.0.0"
+    "split": "^1.0.0",
+    "stream-combiner": "^0.2.2"
   }
 }
