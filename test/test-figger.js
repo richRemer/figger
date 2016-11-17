@@ -299,4 +299,52 @@ describe("stages", () => {
             expect(objs.length).to.be(1);
         });
     });
+
+    describe("refs", () => {
+        var results, input, T, output,
+            objval = {};
+
+        before(done => {
+            results = [];
+            input = readable([
+                " ${a} ",
+                token("quote", '"'), "${a}", token("quote", '"'),
+                "${-._:$!a}",
+                "${-}",
+                objval
+            ]);
+            T = figger.stage.refs();
+            output = input.pipe(T);
+
+            output.on("data", data => results.push(data));
+            output.on("error", done);
+            output.on("end", done);
+        });
+
+        it("should process 'ref' tokens outside quote", () => {
+            expect(results[0]).to.be(" ");
+            expect(results[1].type).to.be(token.ref);
+            expect(results[1].value).to.be("${a}");
+            expect(results[2]).to.be(" ");
+        });
+
+        it("should process 'ref' tokens inside quote", () => {
+            expect(results[4].type).to.be(token.ref);
+            expect(results[4].value).to.be("${a}");
+        });
+
+        it("should recognize secondary chars with primary", () => {
+            expect(results[6].type).to.be(token.ref);
+            expect(results[6].value).to.be("${-._:$!a}");
+        });
+
+        it("should not recognize isolated secondary chars", () => {
+            expect(results[7]).to.be("${-}");
+        });
+
+        it("should pass through other values", () => {
+            var objs = results.filter(v => v === objval);
+            expect(objs.length).to.be(1);
+        });
+    });
 });
