@@ -1,3 +1,4 @@
+module.exports.tokenize = require("./lib/figger/tokenize");
 module.exports.buffered = require("./lib/figger/buffered");
 module.exports.token = require("./lib/parse/token");
 module.exports.instruction = require("./lib/parse/instruction");
