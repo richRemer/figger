@@ -1,4 +1,6 @@
 module.exports.token = require("./lib/parse/token");
+module.exports.instruction = require("./lib/parse/instruction");
+
 module.exports.stage = {
     assignments: require("./lib/stage/assignments"),
     comments: require("./lib/stage/comments"),
