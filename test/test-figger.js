@@ -119,4 +119,40 @@ describe("stages", () => {
             expect(objs.length).to.be(1);
         });
     });
+
+    describe("dotincs", () => {
+        var results, input, T, output,
+            objval = {};
+
+        before(done => {
+            results = [];
+            input = readable([". foo", ".foo", ".", "string", objval]);
+            T = figger.stage.dotincs();
+            output = input.pipe(T);
+
+            output.on("data", data => results.push(data));
+            output.on("error", done);
+            output.on("end", done);
+        });
+
+        it("should process 'dot ws glob' token sequences", () => {
+            expect(results[0].type).to.be(token.dot);
+            expect(results[1].type).to.be(token.ws);
+            expect(results[2].type).to.be(token.glob);
+            expect(results[2].value).to.be("foo");
+        });
+
+        it("should pass through invalid dots and other string data", () => {
+            var strings = results.filter(v => typeof v === "string");
+            expect(strings.length).to.be(3);
+            expect(strings[0]).to.be(".foo");
+            expect(strings[1]).to.be(".");
+            expect(strings[2]).to.be("string");
+        });
+
+        it("should pass through other values", () => {
+            var objs = results.filter(v => v === objval);
+            expect(objs.length).to.be(1);
+        });
+    });
 });
