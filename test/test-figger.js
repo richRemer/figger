@@ -347,4 +347,38 @@ describe("stages", () => {
             expect(objs.length).to.be(1);
         });
     });
+
+    describe("rawvals", () => {
+        var results, input, T, output,
+            objval = {};
+
+        before(done => {
+            results = [];
+            input = readable([
+                token("assign", "="), "foo", token("eol", "\n"),
+                "foo",
+                objval
+            ]);
+            T = figger.stage.rawvals();
+            output = input.pipe(T);
+
+            output.on("data", data => results.push(data));
+            output.on("error", done);
+            output.on("end", done);
+        });
+
+        it("should process remaining 'rawval' tokens in assigns", () => {
+            expect(results[1].type).to.be(token.rawval);
+            expect(results[1].value).to.be("foo");
+        });
+
+        it("should not process 'rawval' tokens outside assigns", () => {
+            expect(results[3]).to.be("foo");
+        });
+
+        it("should pass through other values", () => {
+            var objs = results.filter(v => v === objval);
+            expect(objs.length).to.be(1);
+        });
+    });
 });
