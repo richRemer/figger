@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-const PassThrough = require("stream").PassThrough;
 const figger = require("..");
 const token = figger.token;
 
