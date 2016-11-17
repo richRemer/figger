@@ -438,3 +438,38 @@ describe("figger.buffered()", () => {
         });
     });
 });
+
+describe("figger.read(string)", () => {
+    var results;
+
+    before((done) => {
+        mockfs({
+            "primary.conf": [
+                "primary=value",
+                ". *.inc"
+            ].join("\n"),
+            "first.inc": "first=value",
+            "second.inc": "second=value"
+        });
+
+        results = [];
+        figger.read("primary.conf")
+            .on("data", datum => results.push(datum))
+            .on("error", done)
+            .on("end", done);
+    });
+
+    after(() => {
+        mockfs.restore();
+    });
+
+    it("should handle includes and produce a single stream", () => {
+        var idents = results.filter(v => v.type === token.ident),
+            names = idents.map(t => t.value);
+
+        expect(names).to.contain("primary");
+        expect(names).to.contain("first");
+        expect(names).to.contain("second");
+        expect(names.length).to.be(3);
+    });
+});

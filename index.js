@@ -1,3 +1,4 @@
+module.exports.read = require("./lib/figger/read");
 module.exports.tokenize = require("./lib/figger/tokenize");
 module.exports.escape = require("./lib/figger/escape");
 module.exports.buffered = require("./lib/figger/buffered");
