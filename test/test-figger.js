@@ -1,4 +1,5 @@
 const expect = require("expect.js");
+const mockfs = require("mock-fs");
 const figger = require("..");
 const token = figger.token;
 const readable = figger.stream.readable;
