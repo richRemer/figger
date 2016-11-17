@@ -84,4 +84,39 @@ describe("stages", () => {
             expect(objs.length).to.be(1);
         });
     });
+
+    describe("trim", () => {
+        var results, input, T, output,
+            objval = {};
+
+        before(done => {
+            results = [];
+            input = readable([" input data ", "adjacent ", " spaces", objval]);
+            T = figger.stage.trim();
+            output = input.pipe(T);
+
+            output.on("data", data => results.push(data));
+            output.on("error", done);
+            output.on("end", done);
+        });
+
+        it("should turn outside space into 'ws' tokens", () => {
+            var ws = results.filter(v => v.type === token.ws);
+            expect(ws.length).to.be(4);
+            expect(ws.every(t => t.value === " ")).to.be(true);
+        });
+
+        it("should pass through remaining string data", () => {
+            var strings = results.filter(v => typeof v === "string");
+            expect(strings.length).to.be(3);
+            expect(strings[0]).to.be("input data");
+            expect(strings[1]).to.be("adjacent");
+            expect(strings[2]).to.be("spaces");
+        });
+
+        it("should pass through other values", () => {
+            var objs = results.filter(v => v === objval);
+            expect(objs.length).to.be(1);
+        });
+    });
 });
