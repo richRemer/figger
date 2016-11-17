@@ -155,4 +155,45 @@ describe("stages", () => {
             expect(objs.length).to.be(1);
         });
     });
+
+    describe("assignments", () => {
+        var results, input, T, output,
+            objval = {};
+
+        before(done => {
+            results = [];
+            input = readable(["a=1","b = 2", "c=", "-._:$!@ =", ")=", objval]);
+            T = figger.stage.assignments();
+            output = input.pipe(T);
+
+            output.on("data", data => results.push(data));
+            output.on("error", done);
+            output.on("end", done);
+        });
+
+        it("should process 'ident ws? assign ws?' sequences", () => {
+            var idents = results.filter(v => v.type === token.ident),
+                assigns = results.filter(v => v.type === token.assign);
+
+            expect(assigns.length).to.be(4);
+            expect(idents.length).to.be(4);
+            expect(idents[0].value).to.be("a");
+            expect(idents[1].value).to.be("b");
+            expect(idents[2].value).to.be("c");
+            expect(idents[3].value).to.be("-._:$!@");
+        });
+
+        it("should pass through invalid assigns and other string data", () => {
+            var strings = results.filter(v => typeof v === "string");
+            expect(strings.length).to.be(3);
+            expect(strings[0]).to.be("1");
+            expect(strings[1]).to.be("2");
+            expect(strings[2]).to.be(")=");
+        });
+
+        it("should pass through other values", () => {
+            var objs = results.filter(v => v === objval);
+            expect(objs.length).to.be(1);
+        });
+    });
 });
