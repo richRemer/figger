@@ -196,4 +196,73 @@ describe("stages", () => {
             expect(objs.length).to.be(1);
         });
     });
+
+    describe("quotvals", () => {
+        var results, input, T, output,
+            objval = {};
+
+        before(done => {
+            results = [];
+            input = readable([
+                token("assign", "="), '"a"', token("eol", "\n"),
+                                      '"a"', token("eol", "\n"),
+                token("assign", "="), '""', token("eol", "\n"),
+                token("assign", "="), '"""', token("eol", "\n"),
+                token("assign", "="), '"a # f"', token("eol", "\n"),
+                token("assign", "="), '"a" # f', token("eol", "\n"),
+                token("assign", "="), '"a"# f', objval
+            ]);
+            T = figger.stage.quotvals();
+            output = input.pipe(T);
+
+            output.on("data", data => results.push(data));
+            output.on("error", done);
+            output.on("end", done);
+        });
+
+        it("should process 'quote ... quote' sequences after 'assign'", () => {
+            expect(results[0].type).to.be(token.assign);
+            expect(results[1].type).to.be(token.quote);
+            expect(results[2]).to.be("a");
+            expect(results[3].type).to.be(token.quote);
+        });
+
+        it("should ignore quotes without 'assign'", () => {
+            expect(results[5]).to.be('"a"');
+        });
+
+        it("should recognize empty string", () => {
+            expect(results[8].type).to.be(token.quote);
+            expect(results[9].type).to.be(token.quote);
+        });
+
+        it("should allow internal quotes", () => {
+            expect(results[12].type).to.be(token.quote);
+            expect(results[13]).to.be('"');
+            expect(results[14].type).to.be(token.quote);
+        });
+
+        it("should prefer full-line string to comments", () => {
+            expect(results[17].type).to.be(token.quote);
+            expect(results[18]).to.be("a # f");
+            expect(results[19].type).to.be(token.quote);
+        });
+
+        it("should recognize string before comment", () => {
+            expect(results[22].type).to.be(token.quote);
+            expect(results[23]).to.be("a");
+            expect(results[24].type).to.be(token.quote);
+            expect(results[25].type).to.be(token.ws);
+            expect(results[26]).to.be("# f");
+        });
+
+        it("should not recognize string abutted to comment", () => {
+            expect(results[29]).to.be('"a"# f');
+        });
+
+        it("should pass through other values", () => {
+            var objs = results.filter(v => v === objval);
+            expect(objs.length).to.be(1);
+        });
+    });
 });
