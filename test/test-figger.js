@@ -265,4 +265,38 @@ describe("stages", () => {
             expect(objs.length).to.be(1);
         });
     });
+
+    describe("comments", () => {
+        var results, input, T, output,
+            objval = {};
+
+        before(done => {
+            results = [];
+            input = readable([
+                "#a",
+                token("quote", '"'), "#a", token("quote", '"'),
+                objval
+            ]);
+            T = figger.stage.comments();
+            output = input.pipe(T);
+
+            output.on("data", data => results.push(data));
+            output.on("error", done);
+            output.on("end", done);
+        });
+
+        it("should process 'comment' tokens", () => {
+            expect(results[0].type).to.be(token.comment);
+            expect(results[0].value).to.be("#a");
+        });
+
+        it("should not process comments inside quotes", () => {
+            expect(results[2]).to.be("#a");
+        });
+
+        it("should pass through other values", () => {
+            var objs = results.filter(v => v === objval);
+            expect(objs.length).to.be(1);
+        });
+    });
 });
