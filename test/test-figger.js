@@ -381,4 +381,30 @@ describe("stages", () => {
             expect(objs.length).to.be(1);
         });
     });
+
+    describe("errors", () => {
+        var results, input, T, output,
+            objval = {};
+
+        before(done => {
+            results = [];
+            input = readable(["foo", objval]);
+            T = figger.stage.errors();
+            output = input.pipe(T);
+
+            output.on("data", data => results.push(data));
+            output.on("error", done);
+            output.on("end", done);
+        });
+
+        it("should classify remaining strings as errors", () => {
+            expect(results[0].type).to.be(token.error);
+            expect(results[0].value).to.be("foo");
+        });
+
+        it("should pass through other values", () => {
+            var objs = results.filter(v => v === objval);
+            expect(objs.length).to.be(1);
+        });
+    });
 });
