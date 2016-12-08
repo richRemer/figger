@@ -14,11 +14,15 @@ if (args.length !== 1) {
 }
 
 figger.read(args[0])
-    .pipe(figger.evaluate())
-    .pipe(figger.clean())
-    .pipe(envify ? env() : str())
-    .pipe(process.stdout)
-    .on("error", e => console.error(process.env.debug ? e.stack : e.message));
+    .pipe(figger.evaluate()).on("error", error)
+    .pipe(figger.clean()).on("error", error)
+    .pipe(envify ? env() : str()).on("error", error)
+    .pipe(process.stdout).on("error", error);
+
+function error(err) {
+    console.error(process.env.debug ? err.stack : err.message);
+    process.exit(1);
+}
 
 function str() {
     return figger.stream.transform(function(chunk, done) {
