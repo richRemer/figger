@@ -524,6 +524,7 @@ describe("figger(string)", () => {
                 "changed        = 1",
                 "ordered        = ${changed}",
                 "changed        = 2",
+                "content        = nonempty",
                 "commented      = commented line    # with comment",
                 "quoted         = \"quoted value\"",
                 "single_quoted  = 'quoted value'",
@@ -537,7 +538,8 @@ describe("figger(string)", () => {
                 ". *.inc"
             ].join("\n"),
             "first.inc": "first_include  = ${name}",
-            "second.inc": "second_include = ${name}"
+            "second.inc": "second_include = ${name}",
+            "content.inc": "content ="
         });
 
         result = figger("primary.conf");
@@ -581,6 +583,7 @@ describe("figger(string)", () => {
 
             it("should allow overriding values", () => {
                 expect(config.changed).to.be("2");
+                expect(config.content).to.be("");
             });
 
             it("should order assignments and refs", () => {
@@ -623,4 +626,3 @@ describe("figger(string)", () => {
         });
     });
 });
-
