@@ -52,7 +52,7 @@ function env() {
                 break;
             case token.rawval:
                 if (~chunk.value.indexOf('"') && !inquote) this.push('"');
-                this.push(chunk.value.replace('"', '\\"'));
+                this.push(chunk.value.replace(/"/g, '\\"'));
                 if (~chunk.value.indexOf('"') && !inquote) this.push('"');
                 break;
             case token.eol:
@@ -68,4 +68,3 @@ function env() {
         done();
     });
 }
-
