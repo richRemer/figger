@@ -31,6 +31,10 @@ function str() {
     });
 }
 
+function needquote(str) {
+    return ~str.indexOf('"') || ~str.indexOf(" ");
+}
+
 function env() {
     var prev,
         inquote = false;
@@ -51,9 +55,9 @@ function env() {
                 inquote = !inquote;
                 break;
             case token.rawval:
-                if (~chunk.value.indexOf('"') && !inquote) this.push('"');
+                if (needquote(chunk.value) && !inquote) this.push('"');
                 this.push(chunk.value.replace(/"/g, '\\"'));
-                if (~chunk.value.indexOf('"') && !inquote) this.push('"');
+                if (needquote(chunk.value) && !inquote) this.push('"');
                 break;
             case token.eol:
                 this.push(String(chunk));
