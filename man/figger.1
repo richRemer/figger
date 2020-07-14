@@ -1,0 +1,47 @@
+.TH FIGGER 1 2020-07-14 "figger" "Figger Configuration"
+
+.SH NAME
+figger \- Process a figger configuration file.
+
+.SH SYNOPSIS
+\fBfigger\fR [\fB--envify\fR|\fB--bashify\fR] \fIfile\fR
+.RS 4
+Process the figger configuration \fIfile\fR and print result to STDOUT.
+.RE
+
+\fBfigger\fR \fB--help\fR
+.RS 4
+Show brief usage information for \fBfigger\fR command.
+.RE
+
+.SH DESCRIPTION
+The \fBfigger\fR command is used to process figger configuration files.
+
+.SH ARGUMENTS
+
+.TP
+\fIfile\fR
+.RS 4
+Source file to process.  If the file is a symlink, it is processed within the
+context of the link directory, rather than the target file directory.
+.RE
+
+.SH OPTIONS
+
+.TP
+\fB--help\fR
+.RS 4
+Display high-level summary of options and arguments.
+.RE
+
+.TP
+\fB--envify\fR
+.RS 4
+Generate output in format suitable as an environment file.
+.RE
+
+.TP
+\fB--bashify\fR
+.RS 4
+Generate output in format suitable for source into bash shell.
+.RE
