@@ -4,14 +4,16 @@ const figger = require("..");
 const token = figger.token;
 
 var args = process.argv.slice(2),
-    envify = Boolean(~args.indexOf("--envify")),
-    bashify = Boolean(~args.indexOf("--bashify")),
+    help = Boolean(args.includes("--help")),
+    envify = Boolean(args.includes("--envify")),
+    bashify = Boolean(args.includes("--bashify")),
     esc = () => envify ? escape("env") : bashify ? escape("bash") : str(),
 
 args = args.filter(arg => !["--envify", "--bashify"].includes(arg));
 
-if (args.length !== 1) usage();
-if (envify && bashify) usage();
+if (help) usage();
+if (args.length !== 1) usage(1);
+if (envify && bashify) usage(1);
 
 figger.read(args[0])
     .pipe(figger.evaluate()).on("error", error)
@@ -83,7 +85,7 @@ function escape(style) {
     });
 }
 
-function usage() {
+function usage(status=0) {
     console.error("Usage: figger [--envify|--bashify] <file>");
-    process.exit(1);
+    process.exit(status);
 }
