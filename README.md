@@ -100,7 +100,7 @@ Command-line Use
 ----------------
 The figger package includes a command-line tool, also called `figger`, which can
 be used to pre-process figger configs.  It can optionally generate output in a
-format compatible with 'env' files.
+format compatible with 'env' files or with bash.
 
 ```sh
 # pre-process app.conf and generate single config file in settings.conf
@@ -108,4 +108,7 @@ figger app.conf > settings.conf
 
 # generate .env file from app.conf
 figger --envify app.conf > .env
+
+# import result into bash shell
+source <(figger --bashify app.conf)
 ```

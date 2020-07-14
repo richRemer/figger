@@ -4,19 +4,19 @@ const figger = require("..");
 const token = figger.token;
 
 var args = process.argv.slice(2),
-    envify = Boolean(~args.indexOf("--envify"));
+    envify = Boolean(~args.indexOf("--envify")),
+    bashify = Boolean(~args.indexOf("--bashify")),
+    esc = () => envify ? escape("env") : bashify ? escape("bash") : str(),
 
-args = args.filter(arg => arg !== "--envify");
+args = args.filter(arg => !["--envify", "--bashify"].includes(arg));
 
-if (args.length !== 1) {
-    console.error("Usage: figger [--envify] <file>");
-    process.exit(1);
-}
+if (args.length !== 1) usage();
+if (envify && bashify) usage();
 
 figger.read(args[0])
     .pipe(figger.evaluate()).on("error", error)
     .pipe(figger.clean()).on("error", error)
-    .pipe(envify ? env() : str()).on("error", error)
+    .pipe(esc()).on("error", error)
     .pipe(process.stdout).on("error", error);
 
 function error(err) {
@@ -35,9 +35,13 @@ function needquote(str) {
     return ~str.indexOf('"') || ~str.indexOf(" ");
 }
 
-function env() {
-    var prev,
-        inquote = false;
+function escape(style) {
+    if (!["env", "bash"].includes(style)) {
+        throw new Error(`invalid escape style: ${style}`);
+    }
+
+    let prev;
+    let inquote = false;
 
     return figger.stream.transform(function(chunk, done) {
         switch (chunk.op || chunk.type) {
@@ -51,13 +55,19 @@ function env() {
                 this.push(String(chunk));
                 break;
             case token.quote:
-                this.push(String(chunk));
+                this.push(style === "bash" ? "'" : '"');
                 inquote = !inquote;
                 break;
             case token.rawval:
-                if (needquote(chunk.value) && !inquote) this.push('"');
-                this.push(chunk.value.replace(/"/g, '\\"'));
-                if (needquote(chunk.value) && !inquote) this.push('"');
+                if (style === "env") {
+                    if (needquote(chunk.value) && !inquote) this.push('"');
+                    this.push(chunk.value.replace(/"/g, '\\"'));
+                    if (needquote(chunk.value) && !inquote) this.push('"');
+                } else if (style === "bash") {
+                    if (!inquote) this.push("'");
+                    this.push(chunk.value.replace(/'/g, "'\"'\"'"));
+                    if (!inquote) this.push("'");
+                }
                 break;
             case token.eol:
                 this.push(String(chunk));
@@ -71,4 +81,9 @@ function env() {
         prev = chunk;
         done();
     });
+}
+
+function usage() {
+    console.error("Usage: figger [--envify|--bashify] <file>");
+    process.exit(1);
 }
